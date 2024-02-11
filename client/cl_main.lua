@@ -44,7 +44,6 @@ RegisterNetEvent('bbv-slipstream:client:sync',function(enabled,car)
     SetVehicleLightTrailEnabled(veh,enabled)
 end)
 
-
 -- trails code from : https://github.com/swcfx/sw-nitro/blob/master/client/trails.lua
 
 local vehicles = {}
