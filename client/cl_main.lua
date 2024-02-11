@@ -39,7 +39,7 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('bbv-slipstream:client:sync',function(enabled,car)
-    if not NetworkDoesEntityExistWithNetworkId(car) then return end
+    if not NetworkDoesEntityExistWithNetworkId(car) then return end -- neen sync
     local veh = NetworkGetEntityFromNetworkId(car)
     SetVehicleLightTrailEnabled(veh,enabled)
 end)
