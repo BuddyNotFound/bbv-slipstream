@@ -1,5 +1,5 @@
 -- Enable Global Slipstream
-local cici = false
+local SyncStop = false
 
 CreateThread(function()
     Wait(1000)
@@ -17,15 +17,15 @@ CreateThread(function()
         if IsPedInAnyVehicle(myped, false) then 
             local mycar = GetVehiclePedIsIn(myped, false)
             local slip = IsVehicleSlipstreamLeader(mycar) == 1
-            if slip then 
-                if cici then
-                    cici = false
+            if slip then
+                if SyncStop then
+                    SyncStop = false
                 end
                 TriggerServerEvent('bbv-slipstream:sync', true, NetworkGetNetworkIdFromEntity(mycar))
             else
-                if not cici then
+                if not SyncStop then
                     TriggerServerEvent('bbv-slipstream:sync', false, NetworkGetNetworkIdFromEntity(mycar))
-                    cici = true
+                    SyncStop = true
                 end
             end
             local slipam = GetVehicleCurrentSlipstreamDraft(GetVehiclePedIsIn(PlayerPedId(),false))
@@ -55,44 +55,35 @@ function IsVehicleLightTrailEnabled(vehicle)
 end
 
 function SetVehicleLightTrailEnabled(vehicle, enabled)
-    if IsVehicleLightTrailEnabled(vehicle) == enabled then
-      return
-    end
-    
+    if IsVehicleLightTrailEnabled(vehicle) == enabled then return end
     if enabled then
-      local ptfxs = {}
-      
-      local leftTrail = CreateVehicleLightTrail(vehicle, GetEntityBoneIndexByName(vehicle, "taillight_l"), 1.0)
-      local rightTrail = CreateVehicleLightTrail(vehicle, GetEntityBoneIndexByName(vehicle, "taillight_r"), 1.0)
-      
-      table.insert(ptfxs, leftTrail)
-      table.insert(ptfxs, rightTrail)
-  
-      vehicles[vehicle] = true
-      particles[vehicle] = ptfxs
+        local ptfxs = {}
+        local leftTrail = CreateVehicleLightTrail(vehicle, GetEntityBoneIndexByName(vehicle, "taillight_l"), 1.0)
+        local rightTrail = CreateVehicleLightTrail(vehicle, GetEntityBoneIndexByName(vehicle, "taillight_r"), 1.0)
+        ptfxs[#ptfxs+1] = leftTrail
+        ptfxs[#ptfxs+1] = rightTrail
+        vehicles[vehicle] = true
+        particles[vehicle] = ptfxs
     else
-      if particles[vehicle] and #particles[vehicle] > 0 then
-        for _, particleId in ipairs(particles[vehicle]) do
-          StopVehicleLightTrail(particleId, 500)
+        if particles[vehicle] and #particles[vehicle] > 0 then
+            for _, particleId in ipairs(particles[vehicle]) do
+                StopVehicleLightTrail(particleId, 500)
+            end
         end
-      end
-  
-      vehicles[vehicle] = nil
-      particles[vehicle] = nil
+        vehicles[vehicle] = nil
+        particles[vehicle] = nil
     end
-  end
-
+end
 
 function CreateVehicleLightTrail(vehicle, bone, scale)
     UseParticleFxAssetNextCall('core')
     local ptfx = StartParticleFxLoopedOnEntityBone('veh_light_red_trail', vehicle, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, bone, scale, false, false, false)
     SetParticleFxLoopedEvolution(ptfx, "speed", 1.0, false)
     return ptfx
-  end
-  
-  function StopVehicleLightTrail(ptfx, duration)
+end
+
+function StopVehicleLightTrail(ptfx, duration)
     CreateThread(function()
-      local startTime = GetGameTimer()
       local endTime = GetGameTimer() + duration
       while GetGameTimer() < endTime do 
         Wait(0)
@@ -103,4 +94,4 @@ function CreateVehicleLightTrail(vehicle, bone, scale)
       end
       StopParticleFxLooped(ptfx)
     end)
-  end
+end
